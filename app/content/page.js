@@ -31,9 +31,9 @@ export default function ContentPage() {
           <span className={contentStyles.hamburgerBar}></span>
           <span className={contentStyles.hamburgerBar}></span>
         </button>
-        {menuOpen && <div className={contentStyles.menuOverlay} onClick={()=>setMenuOpen(false)}></div>}
+        {menuOpen && <div className={contentStyles.menuOverlay + ' '+ contentStyles.show} onClick={()=>setMenuOpen(false)}></div>}
         {menuOpen && (
-          <nav className={contentStyles.mobileNav}>
+          <nav className={contentStyles.mobileNav + ' ' +contentStyles.show}>
             <a href="/" onClick={()=>setMenuOpen(false)}>Home</a>
             <a href="https://github.com/alvin-dennis/Image-Template-Filler" target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}>Github</a>
           </nav>

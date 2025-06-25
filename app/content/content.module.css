@@ -164,6 +164,13 @@
 .menuOverlay {
   display: none;
 }
+.show {
+  display: flex !important;
+}
+
+.mobileNav{
+  display: none;
+}
 
 @media (max-width: 900px) {
   .mainContent {
@@ -200,7 +207,34 @@
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(20,15,23,0.18);
+    z-index: 100;
+  }
+
+    .mobileNav {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 56px;
+    right: 16px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(24,16,40,0.10);
+    border-radius: 12px;
     z-index: 110;
+    min-width: 140px;
+    padding: 12px 0;
+    gap: 0;
+  }
+  .mobileNav a {
+    color: #5b159a;
+    padding: 12px 24px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    border-bottom: 1px solid #ececec;
+    font-family: var(--font-dm-sans, 'DM Sans', sans-serif);
+  }
+  .mobileNav a:last-child {
+    border-bottom: none;
   }
   .mainContent {
     flex-direction: column;
