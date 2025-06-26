@@ -1,5 +1,25 @@
 /* Removed :global(html) for Next.js compatibility */
-
+.arrowleft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #181028;
+  font-weight: 700;
+  font-size: 20px;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  
+}
+.arrowleft:hover, .arrowleft:focus {
+  background: linear-gradient(135deg, #e1d6fa 0%, #cbb6f7 100%);
+  color: #3a0d6a;
+  box-shadow: 0 4px 16px rgba(91,21,154,0.16);
+  transform: translateX(-2px) scale(1.05);
+}
 .navLinks {
   margin-left: auto;
   margin-right: 40px;
@@ -172,6 +192,39 @@
   display: none;
 }
 
+.contentActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  gap: 16px;
+}
+.contentButton{
+    font-family: var(--font-dm-sans, 'DM Sans', sans-serif);
+  background: #5b159a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(24,16,40,0.08);
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  outline: none;
+}
+.contentButton:hover, .contentButton:focus {
+  background: #3d0e6e;
+  box-shadow: 0 4px 18px rgba(24,16,40,0.13);
+  transform: translateY(-1px) scale(1.01);
+}
+.contentButton:active {
+  background: #2a094d;
+  transform: scale(0.98);
+}
+
+
+
 @media (max-width: 900px) {
   .mainContent {
     flex-direction: column;
@@ -273,6 +326,17 @@
     font-size: 12px;
     padding: 6px 6px;
   }
+
+    .contentActions {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .contentButton {
+    width: 100%;
+    padding: 12px 0;
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 600px) {
@@ -303,3 +367,5 @@
 .previewAllButton {
   font-family: var(--font-dm-sans, 'DM Sans', sans-serif);
 } 
+
+

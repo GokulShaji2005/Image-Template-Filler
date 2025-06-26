@@ -2,10 +2,14 @@
 import styles from "../Landing.module.css";
 import contentStyles from "./content.module.css";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ArrowLeft } from 'lucide-react'
+import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 export default function ContentPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+   const [isMobile, setIsmobile] = useState(false);
   const csvHeaders = ["Column 1", "Column 2", "Column 3"];
   const csvRows = [
     ["Value A1", "Value B1", "Value C1"],
@@ -15,9 +19,22 @@ export default function ContentPage() {
     ["Value A5", "Value B5", "Value C5"],
   ];
 
+    useEffect(() => {
+      const mediaQuery = window.matchMedia('(max-width:900px)');
+      const moveEditBtn = () => setIsmobile(mediaQuery.matches);
+  
+      moveEditBtn();
+      mediaQuery.addEventListener('change', moveEditBtn);
+      return () => mediaQuery.removeEventListener('change', moveEditBtn);
+  
+    }, []);
+
+    const router = useRouter();
+
   return (
     <div className={styles.landing}>
       <header className={styles.navbar} style={{position:'relative'}}>
+        <ArrowLeft className={contentStyles.arrowleft} size={30} onClick={()=>router.back()}/>
         <div className={styles.logoRow}>
           <img src="/logo_image.svg" alt="Logo" className={styles.logo} />
           <span className={styles.brand}>Image-Template-Filler</span>
@@ -62,7 +79,13 @@ export default function ContentPage() {
               </tbody>
             </table>
           </div>
+
+         {isMobile && (<button className={contentStyles.contentButton} type="button" 
+         style={{background:'#ececec', color:'#181028', fontWeight:600, marginTop:'5px'}}>Edit CSV</button>)} 
+            
+          
         </section>
+
         <section className={contentStyles.previewSection}>
           <h2 className={contentStyles.sectionTitle}>Preview</h2>
           <div className={contentStyles.previewRow}>
@@ -78,7 +101,19 @@ export default function ContentPage() {
             </div>
           </div>
         </section>
+
+        
       </main>
+            <div className={contentStyles.contentActions}>
+         {!isMobile && (<button className={contentStyles.contentButton} type="button" style={{background:'#ececec', color:'#181028', fontWeight:600}}>Edit CSV</button>)} 
+           <button
+            className={contentStyles.contentButton}
+            type="button"
+          >
+            Next
+          </button>
+        </div>
     </div>
+    
   );
 }
