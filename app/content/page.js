@@ -5,20 +5,27 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from "next/navigation";
-// import { useRouter } from "next/navigation";
+import UploadCSV from "@/components/UploadCSV";
+
 
 export default function ContentPage() {
   const [menuOpen, setMenuOpen] = useState(false);
    const [isMobile, setIsmobile] = useState(false);
+   const [isEdit,setIsEdit]=useState(false);
+   const [inputvalue,setInputvalue]=useState("");
+   const [Celledit,setCellEdit]=useState({row:null,column:null});
+   const [confirmBtn,setconfirmBtn]=useState(false);
   const csvHeaders = ["Column 1", "Column 2", "Column 3"];
-  const csvRows = [
-    ["Value A1", "Value B1", "Value C1"],
-    ["Value A2", "Value B2", "Value C2"],
-    ["Value A3", "Value B3", "Value C3"],
-    ["Value A4", "Value B4", "Value C4"],
-    ["Value A5", "Value B5", "Value C5"],
-  ];
 
+
+  const [data,setData]=useState([
+    {Column1 :"Value A1", Column2 :"Value B1", Column3 :"Value C1"},
+    {Column1 :"Value A2", Column2 :"Value B2", Column3 :"Value C2"},
+    {Column1 :"Value A3", Column2 :"Value B3", Column3 :"Value C3"},
+    {Column1 :"Value A4", Column2 :"Value B4", Column3 :"Value C4"},
+    {Column1 :"Value A5", Column2 :"Value B5", Column3 :"Value C5"},
+  ])
+  const [editedData,setEditedData]=useState(JSON.parse(JSON.stringify(data)));
     useEffect(() => {
       const mediaQuery = window.matchMedia('(max-width:900px)');
       const moveEditBtn = () => setIsmobile(mediaQuery.matches);
@@ -30,6 +37,33 @@ export default function ContentPage() {
     }, []);
 
     const router = useRouter();
+
+    const cellClick=(rowidx,columnidx)=>{
+      if(isEdit){
+      setCellEdit({row:rowidx,column:columnidx})
+      setInputvalue(data[rowidx][columnidx])
+      }
+    }
+
+    const handleInput=(rowIdx,columnidx,newValue)=>{
+    if(isEdit){
+      const updatedValue=[...editedData];
+      updatedValue[rowIdx][columnidx]=newValue;
+      setEditedData(updatedValue);
+      // setCellEdit({row:null,column:null})
+    }}
+const editMode=()=>{
+  setEditedData(JSON.parse(JSON.stringify(data)));
+  setIsEdit(true);
+  setconfirmBtn(true)
+}
+
+const confirmation=()=>{
+  setData(editedData)
+  setIsEdit(false);
+  setconfirmBtn(false)
+  setCellEdit({row:null,column:null})
+}
 
   return (
     <div className={styles.landing}>
@@ -69,10 +103,15 @@ export default function ContentPage() {
                 </tr>
               </thead>
               <tbody>
-                {csvRows.map((row, rowIdx) => (
+                {data.map((row, rowIdx) => (
                   <tr key={rowIdx}>
-                    {row.map((cell, cellIdx) => (
-                      <td key={cellIdx} className={contentStyles.tableCell}>{cell}</td>
+                    {Object.keys(row).map((columnidx)=>(
+                      <td key={columnidx} className={contentStyles.tableCell} onClick={()=>cellClick(rowIdx,columnidx)}>
+                        {Celledit.row===rowIdx && Celledit.column===columnidx?(
+                          <input value={editedData[rowIdx][columnidx]}
+                           onChange={(e)=>handleInput(rowIdx,columnidx,e.target.value)}
+                          />):(editedData[rowIdx][columnidx])}
+                      </td>
                     ))}
                   </tr>
                 ))}
@@ -80,8 +119,22 @@ export default function ContentPage() {
             </table>
           </div>
 
-         {isMobile && (<button className={contentStyles.contentButton} type="button" 
-         style={{background:'#ececec', color:'#181028', fontWeight:600, marginTop:'5px'}}>Edit CSV</button>)} 
+         {isMobile && (
+          <>
+          <button className={contentStyles.contentButton} type="button" 
+         style={{background:'#ececec', color:'#181028', fontWeight:600, marginTop:'5px'}} onClick={editMode}>Edit CSV</button>
+          
+          {confirmBtn && (
+             <button
+            className={contentStyles.contentConfirmButton}
+            type="button"
+          onClick={confirmation}>
+            Confirm
+          </button>
+            
+          )}
+         </>
+         )} 
             
           
         </section>
@@ -105,7 +158,19 @@ export default function ContentPage() {
         
       </main>
             <div className={contentStyles.contentActions}>
-         {!isMobile && (<button className={contentStyles.contentButton} type="button" style={{background:'#ececec', color:'#181028', fontWeight:600}}>Edit CSV</button>)} 
+         {!isMobile && 
+         (<>
+         <button className={contentStyles.contentButton} type="button" style={{background:'#ececec', color:'#181028', fontWeight:600}}
+         onClick={editMode}   >Edit CSV</button>
+          
+          {confirmBtn && (
+             <button
+            className={contentStyles.contentConfirmButton}
+            type="button"
+          onClick={confirmation}>
+            Confirm
+            </button>)}
+         </>)} 
            <button
             className={contentStyles.contentButton}
             type="button"
