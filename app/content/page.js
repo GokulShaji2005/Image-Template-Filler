@@ -108,7 +108,7 @@ const confirmation=()=>{
                     {Object.keys(row).map((columnidx)=>(
                       <td key={columnidx} className={contentStyles.tableCell} onClick={()=>cellClick(rowIdx,columnidx)}>
                         {Celledit.row===rowIdx && Celledit.column===columnidx?(
-                          <input value={editedData[rowIdx][columnidx]}
+                          <input className="tableInput" value={editedData[rowIdx][columnidx]}
                            onChange={(e)=>handleInput(rowIdx,columnidx,e.target.value)}
                           />):(editedData[rowIdx][columnidx])}
                       </td>
