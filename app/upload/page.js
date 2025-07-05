@@ -4,22 +4,94 @@ import contentStyles from "../content/content.module.css";
 import uploadStyles from "./upload.module.css";
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function UploadPage() {
   const [csvName, setCsvName] = useState("");
   const [imgPreview, setImgPreview] = useState("/upload.png");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [csvProgress, setCsvProgress] = useState(0);
+  const [imgProgress, setImgProgress] = useState(0);
+  const [csvUploaded, setCsvUploaded] = useState(false);
+  const [imgUploaded, setImgUploaded] = useState(false);
+  const [dragCsv, setDragCsv] = useState(false);
+  const [dragImg, setDragImg] = useState(false);
   const csvInput = useRef();
   const imgInput = useRef();
+  const router = useRouter();
+
+  function uploadFile(file, setProgress, setUploaded, cb) {
+    setProgress(0);
+    setUploaded(false);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/upload"); // Change to your real endpoint
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable) {
+        setProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+    xhr.onload = function () {
+      setProgress(100);
+      setUploaded(true);
+      if (cb) cb();
+    };
+    xhr.onerror = function () {
+      setProgress(0);
+      setUploaded(false);
+      alert("Upload failed");
+    };
+    const formData = new FormData();
+    formData.append("file", file);
+    xhr.send(formData);
+  }
 
   function handleCsv(e) {
-    setCsvName(e.target.files[0]?.name || "");
+    const file = e.target.files[0];
+    if (file) {
+      setCsvName(file.name);
+      setCsvUploaded(false);
+      uploadFile(file, setCsvProgress, setCsvUploaded);
+    }
   }
   function handleImg(e) {
-    if (e.target.files[0]) {
-      const url = URL.createObjectURL(e.target.files[0]);
-      setImgPreview(url);
+    const file = e.target.files[0];
+    if (file) {
+      setImgUploaded(false);
+      uploadFile(file, setImgProgress, setImgUploaded, () => {
+        const url = URL.createObjectURL(file);
+        setImgPreview(url);
+      });
     }
+  }
+
+  function handleDropCsv(e) {
+    e.preventDefault();
+    setDragCsv(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      csvInput.current.files = e.dataTransfer.files;
+      handleCsv({ target: { files: e.dataTransfer.files } });
+    }
+  }
+  function handleDropImg(e) {
+    e.preventDefault();
+    setDragImg(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      imgInput.current.files = e.dataTransfer.files;
+      handleImg({ target: { files: e.dataTransfer.files } });
+    }
+  }
+
+  function clearCsv() {
+    setCsvName("");
+    setCsvProgress(0);
+    setCsvUploaded(false);
+    if (csvInput.current) csvInput.current.value = "";
+  }
+  function clearImg() {
+    setImgPreview("/upload.png");
+    setImgProgress(0);
+    setImgUploaded(false);
+    if (imgInput.current) imgInput.current.value = "";
   }
 
   return (
@@ -49,7 +121,12 @@ export default function UploadPage() {
       <main className={uploadStyles.uploadMain}>
         <h1 className={uploadStyles.uploadTitle}>Upload CSV & Template</h1>
         <label className={uploadStyles.uploadLabel}>CSV File</label>
-        <div style={{marginBottom:24}}>
+        <div
+          style={{marginBottom:24}}
+          onDragOver={e => {e.preventDefault(); setDragCsv(true);}}
+          onDragLeave={e => {e.preventDefault(); setDragCsv(false);}}
+          onDrop={handleDropCsv}
+        >
           <input
             type="file"
             accept=".csv"
@@ -58,16 +135,32 @@ export default function UploadPage() {
             onChange={handleCsv}
           />
           <div
-            className={uploadStyles.uploadInput}
+            className={uploadStyles.uploadInput + (dragCsv ? ' ' + uploadStyles.dragActive : '')}
             tabIndex={0}
             onClick={()=>csvInput.current?.click()}
-            style={{cursor:"pointer", userSelect:"none"}}
+            style={{cursor:"pointer", userSelect:"none", display:'flex', alignItems:'center', justifyContent:'space-between'}}
           >
-            {csvName ? csvName : <span style={{color:'#b3a9c9'}}>Drag or click to upload</span>}
+            {csvName ? (
+              <>
+                <span style={{color:'#181028', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{csvName}</span>
+                <button type="button" onClick={e => {e.stopPropagation(); clearCsv();}} style={{marginLeft:8, background:'none', border:'none', color:'#b3a9c9', fontWeight:700, fontSize:18, cursor:'pointer'}}>×</button>
+              </>
+            ) : <span style={{color:'#b3a9c9'}}>Drag or click to upload</span>}
           </div>
+          {csvProgress > 0 && !csvUploaded && (
+            <div className={uploadStyles.uploadProgressBar}>
+              <div className={uploadStyles.uploadProgressBarInner} style={{width: csvProgress + '%'}}></div>
+            </div>
+          )}
+          {csvUploaded && <div style={{color:'#5b159a', fontWeight:600, marginTop:4}}>Uploaded!</div>}
         </div>
         <label className={uploadStyles.uploadLabel}>Template Image</label>
-        <div style={{marginBottom:24}}>
+        <div
+          style={{marginBottom:24}}
+          onDragOver={e => {e.preventDefault(); setDragImg(true);}}
+          onDragLeave={e => {e.preventDefault(); setDragImg(false);}}
+          onDrop={handleDropImg}
+        >
           <input
             type="file"
             accept="image/*"
@@ -76,13 +169,24 @@ export default function UploadPage() {
             onChange={handleImg}
           />
           <div
-            className={uploadStyles.uploadInput}
+            className={uploadStyles.uploadInput + (dragImg ? ' ' + uploadStyles.dragActive : '')}
             tabIndex={0}
             onClick={()=>imgInput.current?.click()}
-            style={{cursor:"pointer", userSelect:"none"}}
+            style={{cursor:"pointer", userSelect:"none", display:'flex', alignItems:'center', justifyContent:'space-between'}}
           >
-            <span style={{color:'#b3a9c9'}}>Drag or click to upload</span>
+            {imgUploaded ? (
+              <>
+                <span style={{color:'#181028', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{imgInput.current?.files?.[0]?.name || "Image uploaded"}</span>
+                <button type="button" onClick={e => {e.stopPropagation(); clearImg();}} style={{marginLeft:8, background:'none', border:'none', color:'#b3a9c9', fontWeight:700, fontSize:18, cursor:'pointer'}}>×</button>
+              </>
+            ) : <span style={{color:'#b3a9c9'}}>Drag or click to upload</span>}
           </div>
+          {imgProgress > 0 && !imgUploaded && (
+            <div className={uploadStyles.uploadProgressBar}>
+              <div className={uploadStyles.uploadProgressBarInner} style={{width: imgProgress + '%'}}></div>
+            </div>
+          )}
+          {imgUploaded && <div style={{color:'#5b159a', fontWeight:600, marginTop:4}}>Uploaded!</div>}
         </div>
         <label className={uploadStyles.uploadPreviewLabel}>Template Preview</label>
         <div className={uploadStyles.uploadPreview}>
@@ -90,7 +194,15 @@ export default function UploadPage() {
         </div>
         <div className={uploadStyles.uploadActions}>
           <button className={uploadStyles.uploadButton} type="button" style={{background:'#ececec', color:'#181028', fontWeight:600}}>Edit Template</button>
-          <button className={uploadStyles.uploadButton} type="button">Next</button>
+          <button
+            className={uploadStyles.uploadButton}
+            type="button"
+            disabled={!(csvUploaded && imgUploaded)}
+            style={{opacity: !(csvUploaded && imgUploaded) ? 0.6 : 1, pointerEvents: !(csvUploaded && imgUploaded) ? 'none' : 'auto'}}
+            onClick={()=>router.push("/content")}
+          >
+            Next
+          </button>
         </div>
       </main>
     </div>
